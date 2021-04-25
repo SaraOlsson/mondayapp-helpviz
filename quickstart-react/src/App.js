@@ -5,6 +5,9 @@ import "monday-ui-react-core/dist/main.css"
 //Explore more Monday React Components here: https://style.monday.com/
 import AttentionBox from "monday-ui-react-core/dist/AttentionBox.js"
 import TaskItem from './components/TaskItem'
+import TreeGraph from './components/TreeGraph'
+import Example from './components/Example'
+import ParentSize from '@visx/responsive/lib/components/ParentSize';
 
 const monday = mondaySdk(
   {
@@ -55,6 +58,9 @@ const FunctionApp = () => {
         text="Let's start building your amazing app, which will change the world!"
         type="success"
       /> */}
+
+      {/* <ParentSize>{({ width, height }) => <Example width={500} height={300} />}</ParentSize> */}
+      <Example width={500} height={300} />
 
       { itemData && 
         <TaskItem itemData={itemData} name="MyName" columnValues={{status: "Great"}}/>
