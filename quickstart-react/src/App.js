@@ -5,9 +5,9 @@ import "monday-ui-react-core/dist/main.css"
 //Explore more Monday React Components here: https://style.monday.com/
 import AttentionBox from "monday-ui-react-core/dist/AttentionBox.js"
 import TaskItem from './components/TaskItem'
-import TreeGraph from './components/TreeGraph'
-import Example from './components/Example'
-import ParentSize from '@visx/responsive/lib/components/ParentSize';
+//import Example from './components/Example'
+import ItemTree from './components/ItemTree'
+
 
 const monday = mondaySdk(
   {
@@ -16,7 +16,7 @@ const monday = mondaySdk(
   }
 );
 
-const FunctionApp = () => {
+const App = () => {
 
   const [context, setContext] = useState({})
   const [settings, setSettings] = useState({})
@@ -59,8 +59,19 @@ const FunctionApp = () => {
         type="success"
       /> */}
 
+      {/* <Toolis/> */}
+
+      {/* <div id="body">
+        <Tolle showDelay={300}
+        content={`I'm a tooltip`}
+        containerSelector="body"
+        immediateShowDelay={0}> Hej </Tolle>
+      </div> */}
+
+
       {/* <ParentSize>{({ width, height }) => <Example width={500} height={300} />}</ParentSize> */}
-      <Example width={500} height={300} />
+      {/* <Example width={500} height={300} /> */}
+      <ItemTree width={500} height={300} />
 
       { itemData && 
         <TaskItem itemData={itemData} name="MyName" columnValues={{status: "Great"}}/>
@@ -79,4 +90,4 @@ const FunctionApp = () => {
 }
 
 
-export default FunctionApp;
+export default App;
