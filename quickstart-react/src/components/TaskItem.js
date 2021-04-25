@@ -27,7 +27,7 @@ const TaskItem = (props) => {
                         { person && <p>Person: {person.text}</p> }
                         { details && <p>Details: {details.text}</p> }
 
-                        <p> {JSON.stringify(column_values)} </p>
+                        {/* <p> {JSON.stringify(column_values)} </p> */}
                     </div>
                     )
                 })
