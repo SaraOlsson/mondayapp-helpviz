@@ -7,43 +7,50 @@ import useForceUpdate from './useForceUpdate';
 import LinkControls from './LinkControls';
 import getLinkComponent from './getLinkComponent';
 
+import colors from "monday-ui-react-core/dist/assets/colors.json"
+
 interface TreeNode {
   name: string;
+  status: string;
   isExpanded?: boolean;
   children?: TreeNode[];
 }
 
-const data: TreeNode = {
-  name: 'Sara Olsson',
-  children: [
-    {
-      name: 'Create API Management',
-      children: [
-        { name: 'A1' },
-        { name: 'A2' },
-        { name: 'A3' }
-      ],
-    },
-    { name: 'Z' },
-    {
-      name: 'B',
-      children: [{ name: 'B1' }, { name: 'B2' }, { name: 'B3' }],
-    },
-  ],
-};
+const STATUS_RADIUS = 6
 
-const defaultMargin = { top: 30, left: 30, right: 30, bottom: 70 };
+// const defaultData: TreeNode = {
+//   name: 'Sara Olsson',
+//   children: [
+//     {
+//       name: 'Default Data',
+//       children: [
+//         { name: 'A1' },
+//         { name: 'A2' },
+//         { name: 'A3' }
+//       ],
+//     },
+//     { name: 'Z' },
+//     {
+//       name: 'B',
+//       children: [{ name: 'B1' }, { name: 'B2' }, { name: 'B3' }],
+//     },
+//   ],
+// };
+
+const defaultMargin = { top: 30, left: 30, right: 230, bottom: 70 };
 
 export type LinkTypesProps = {
   width: number;
   height: number;
   margin?: { top: number; right: number; bottom: number; left: number };
+  data: TreeNode;
 };
 
 export default function Example({
   width: totalWidth,
   height: totalHeight,
   margin = defaultMargin,
+  data: data
 }: LinkTypesProps) {
   const [layout, setLayout] = useState<string>('cartesian');
   const [orientation, setOrientation] = useState<string>('horizontal');
@@ -88,8 +95,11 @@ export default function Example({
                 ))}
 
                 {tree.descendants().map((node, key) => {
-                  const width = 40;
+                  let width = 40;
                   const height = 20;
+
+                  if(node.data.name)
+                    width = node.data.name.length*6;
 
                   let top: number = node.x;
                   let left: number = node.y;            
@@ -139,9 +149,9 @@ export default function Example({
                       </text>
                       {/* <div style={{width: 10, height: 10, borderRadius: 100, backgroundColor: 'pink'}}></div> */}
                       <circle
-                          r={6}
-                          transform="translate(40, 0)"
-                          fill="url('#links-gradient')"
+                          r={STATUS_RADIUS}
+                          transform={"translate("+ ((STATUS_RADIUS*2)+(width/2)).toString() + ", 0)"}
+                          fill={node.data.status === 'Flow' ? colors["success"] : colors["orange"]}
                           onClick={() => {
                             node.data.isExpanded = !node.data.isExpanded;
                             console.log(node);
@@ -159,3 +169,5 @@ export default function Example({
     </div>
   );
 }
+
+//                           fill="url('#links-gradient')"

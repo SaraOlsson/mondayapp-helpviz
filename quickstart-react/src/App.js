@@ -5,8 +5,13 @@ import "monday-ui-react-core/dist/main.css"
 //Explore more Monday React Components here: https://style.monday.com/
 import AttentionBox from "monday-ui-react-core/dist/AttentionBox.js"
 import TaskItem from './components/TaskItem'
+import SearchTest from './components/SearchTest'
+import MondayProgressBar from './components/MondayProgressBar'
 //import Example from './components/Example'
 import ItemTree from './components/ItemTree'
+
+
+import colors from "monday-ui-react-core/dist/assets/colors.json"
 
 
 const monday = mondaySdk(
@@ -23,6 +28,7 @@ const App = () => {
   const [boardData, setBoardData] = useState({})
   const [itemData, setItemData] = useState(undefined)
   const [boardIds, setBoardIds] = useState([])
+  const [tree, setTree] = useState({})
 
   console.log(itemData)
 
@@ -41,7 +47,9 @@ const App = () => {
       )
       .then(res => {
         setBoardData(res.data) // res.data);
-        setItemData(res.data.boards.find(b => b.name === "Saras Test Workspace").items) 
+        const items = res.data.boards.find(b => b.name === "Saras Test Workspace").items
+        setItemData(items) 
+        generateTreeNode(items)
       });
     })
 
@@ -49,6 +57,61 @@ const App = () => {
     monday.listen(['settings'], callback);
 
   }, [])
+
+  
+  const generateTreeNode = (items) => {
+
+    let newTree = {
+      name: 'Base',
+      children: []
+    }
+
+    items.map(i => {
+
+      let status = i.column_values.find(c => c.title === "Status").text
+
+      newTree.children.push({
+        name: i.name,
+        status: status,
+        children: []
+      })
+    })
+
+    // newTree.children.push(
+    //   {
+    //     name: 'Children 1',
+    //     children: []
+    //   }
+    // )
+
+    // newTree.children.push(
+    //   {
+    //     name: 'Children 2',
+    //     children: []
+    //   }
+    // )
+
+    setTree(newTree)
+
+    // return {
+    //   name: 'YAY!',
+    //   children: [
+    //     {
+    //       name: 'Default Data!',
+    //       children: [
+    //         { name: 'A1' },
+    //         { name: 'A2' },
+    //         { name: 'A3' }
+    //       ],
+    //     },
+    //     { name: 'Z' },
+    //     {
+    //       name: 'B',
+    //       children: [{ name: 'B1' }, { name: 'B2' }, { name: 'B3' }],
+    //     },
+    //   ],
+    // }
+  }
 
   return (
 
@@ -59,19 +122,14 @@ const App = () => {
         type="success"
       /> */}
 
-      {/* <Toolis/> */}
+      {/* <MondayProgressBar/>
+      <SearchTest/> */}
 
-      {/* <div id="body">
-        <Tolle showDelay={300}
-        content={`I'm a tooltip`}
-        containerSelector="body"
-        immediateShowDelay={0}> Hej </Tolle>
-      </div> */}
-
+      <div className="mainFlex">
 
       {/* <ParentSize>{({ width, height }) => <Example width={500} height={300} />}</ParentSize> */}
       {/* <Example width={500} height={300} /> */}
-      <ItemTree width={500} height={300} />
+      <ItemTree width={1000} height={300} data={tree}/>
 
       { itemData && 
         <TaskItem itemData={itemData} name="MyName" columnValues={{status: "Great"}}/>
@@ -79,8 +137,13 @@ const App = () => {
       {/* {
         JSON.stringify(this.state.settings)
       } */}
+      {
+        colors["american_gray"]
+      }
       {/* {JSON.stringify(boardData, null, 2)} */}
       {/* {JSON.stringify(itemData, null, 2)} */}
+
+      </div>
       
     </div>
 
@@ -89,5 +152,5 @@ const App = () => {
 
 }
 
-
+//         JSON.stringify(colors)
 export default App;
