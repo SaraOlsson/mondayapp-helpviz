@@ -9,6 +9,7 @@ import SearchTest from './components/SearchTest'
 import MondayProgressBar from './components/MondayProgressBar'
 //import Example from './components/Example'
 import ItemTree from './components/ItemTree'
+import ParentSize from '@visx/responsive/lib/components/ParentSize'
 
 
 import colors from "monday-ui-react-core/dist/assets/colors.json"
@@ -29,6 +30,9 @@ const App = () => {
   const [itemData, setItemData] = useState(undefined)
   const [boardIds, setBoardIds] = useState([])
   const [tree, setTree] = useState({})
+  const [perUserTree, setPerUserTree] = useState({})
+
+  const [linkType, setLinkType] = useState('diagonal');
 
   console.log(itemData)
 
@@ -38,6 +42,8 @@ const App = () => {
       console.log(res);
       /* { data: { users: [{id: 12312, name: "Bart Simpson"}, {id: 423423, name: "Homer Simpson"}] } } */
     });
+
+
 
     monday.listen(['context'], res => {
       setContext(res.data);
@@ -49,20 +55,67 @@ const App = () => {
         setBoardData(res.data) // res.data);
         const items = res.data.boards.find(b => b.name === "Saras Test Workspace").items
         setItemData(items) 
-        generateTreeNode(items)
+        const newTree = generateTreeNode(items)
+        setTree(newTree)
+
+        // Group by users instead
+        let grouped = [];
+        let created = Object.create(null)
+
+        items.forEach(function (a) {
+            let person = a.column_values.find(c => c.title === "Person").text
+            this[person] || grouped.push(this[person] = []);
+            this[person].push(a);
+        }, created);
+
+        console.log(grouped);
+        console.log(created);
+        setPerUserTree(created)
+
       });
     })
 
-    const callback = res => setSettings(res);
+    // monday.api(`query ($boardIds: [Int]) { boards (ids:$boardIds) { name items(limit:10) { name column_values { title text } } } }`,
+    //     { variables: {boardIds: [1212645165]} }
+    //   )
+    //   .then(res => {
+    //     setBoardData(res.data) // res.data);
+    //     const items = res.data.boards.find(b => b.name === "Saras Test Workspace").items
+    //     setItemData(items) 
+    //     const newTree = generateTreeNode(items)
+    //     setTree(newTree)
+
+    //     console.log(items)
+
+    //     let grouped = [];
+    //     let created = Object.create(null)
+
+    //     items.forEach(function (a) {
+    //         let person = a.column_values.find(c => c.title === "Person").text
+    //         this[person] || grouped.push(this[person] = []);
+    //         this[person].push(a);
+    //     }, created);
+
+    //     console.log(grouped);
+    //     console.log(created);
+    //     setPerUserTree(created)
+
+    // });
+
+    const callback = res => {
+      setSettings(res);
+      const linkstyle = res.data.linkstyle;
+      setLinkType(linkstyle)
+    }
     monday.listen(['settings'], callback);
 
   }, [])
 
   
-  const generateTreeNode = (items) => {
+  const generateTreeNode = (items, key = 'User') => {
 
     let newTree = {
-      name: 'Base',
+      name: key,
       children: []
     }
 
@@ -77,40 +130,8 @@ const App = () => {
       })
     })
 
-    // newTree.children.push(
-    //   {
-    //     name: 'Children 1',
-    //     children: []
-    //   }
-    // )
-
-    // newTree.children.push(
-    //   {
-    //     name: 'Children 2',
-    //     children: []
-    //   }
-    // )
-
-    setTree(newTree)
-
-    // return {
-    //   name: 'YAY!',
-    //   children: [
-    //     {
-    //       name: 'Default Data!',
-    //       children: [
-    //         { name: 'A1' },
-    //         { name: 'A2' },
-    //         { name: 'A3' }
-    //       ],
-    //     },
-    //     { name: 'Z' },
-    //     {
-    //       name: 'B',
-    //       children: [{ name: 'B1' }, { name: 'B2' }, { name: 'B3' }],
-    //     },
-    //   ],
-    // }
+  
+    return newTree // setTree(newTree)
   }
 
   return (
@@ -127,21 +148,45 @@ const App = () => {
 
       <div className="mainFlex">
 
-      {/* <ParentSize>{({ width, height }) => <Example width={500} height={300} />}</ParentSize> */}
-      {/* <Example width={500} height={300} /> */}
-      <ItemTree width={1000} height={300} data={tree}/>
+        {
+          Object.keys(perUserTree).map(function(key) {
+            return (
+            <>
+              <h4 className="userHeader">{key}</h4>
+              <p> <b>Summary:</b> {perUserTree[key].length} onging items</p>
+              <ItemTree width={500} height={200} 
+              data={generateTreeNode(perUserTree[key], key)}
+              linkType={linkType}/>
+            </>
+            )
+          })
+        }
 
-      { itemData && 
-        <TaskItem itemData={itemData} name="MyName" columnValues={{status: "Great"}}/>
-      }
-      {/* {
-        JSON.stringify(this.state.settings)
-      } */}
-      {
-        colors["american_gray"]
-      }
-      {/* {JSON.stringify(boardData, null, 2)} */}
-      {/* {JSON.stringify(itemData, null, 2)} */}
+        {/* <div style={{height: 500, width: '100vw'}}>
+        <ParentSize>{({ width, height }) => 
+          <ItemTree width={width} height={height} 
+                    data={tree}
+                    linkType={linkType}/>}
+        </ParentSize>
+        </div> */}
+
+
+        {/* <Example width={500} height={300} /> */}
+        {/* <ItemTree width={1000} height={300} data={tree}/> */}
+        {/* <p>linkType: {linkType}</p> */}
+
+        {/* { itemData && 
+          <TaskItem itemData={itemData} name="MyName" columnValues={{status: "Great"}}/>
+        } */}
+
+        {/* {
+          JSON.stringify(settings)
+        } */}
+        {/* {
+          colors["american_gray"]
+        } */}
+        {/* {JSON.stringify(boardData, null, 2)} */}
+        {/* {JSON.stringify(itemData, null, 2)} */}
 
       </div>
       

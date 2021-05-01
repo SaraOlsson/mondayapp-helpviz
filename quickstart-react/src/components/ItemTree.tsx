@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Group } from '@visx/group';
 import { hierarchy, Tree } from '@visx/hierarchy';
 import { LinearGradient } from '@visx/gradient';
@@ -44,17 +44,19 @@ export type LinkTypesProps = {
   height: number;
   margin?: { top: number; right: number; bottom: number; left: number };
   data: TreeNode;
+  linkType: string;
 };
 
-export default function Example({
+export default function ItemTree({
   width: totalWidth,
   height: totalHeight,
   margin = defaultMargin,
-  data: data
+  data: data,
+  linkType: linkType
 }: LinkTypesProps) {
   const [layout, setLayout] = useState<string>('cartesian');
   const [orientation, setOrientation] = useState<string>('horizontal');
-  const [linkType, setLinkType] = useState<string>('diagonal');
+  // const [linkType, setLinkType] = useState<string>('diagonal');
   const [stepPercent, setStepPercent] = useState<number>(0.5);
   const forceUpdate = useForceUpdate();
 
@@ -68,10 +70,14 @@ export default function Example({
   //sizeWidth = innerHeight;
   //sizeHeight = innerWidth;
 
+  useEffect(() => {
+    forceUpdate()
+  }, [linkType])
+
   const LinkComponent = getLinkComponent({ layout, linkType, orientation });
 
   return totalWidth < 10 ? null : (
-    <div>
+    <div className="myItemTree">
       <svg width={totalWidth} height={totalHeight}>
         <LinearGradient id="links-gradient" from="#fd9b93" to="#fe6e9e" />
         <rect width={totalWidth} height={totalHeight} rx={14} fill="#272b4d" />
@@ -148,6 +154,7 @@ export default function Example({
                         {node.data.name}
                       </text>
                       {/* <div style={{width: 10, height: 10, borderRadius: 100, backgroundColor: 'pink'}}></div> */}
+                      {node.depth > 0 &&
                       <circle
                           r={STATUS_RADIUS}
                           transform={"translate("+ ((STATUS_RADIUS*2)+(width/2)).toString() + ", 0)"}
@@ -158,6 +165,7 @@ export default function Example({
                             forceUpdate();
                           }}
                         />
+                      }
                     </Group>
                   );
                 })}
