@@ -14,6 +14,7 @@ interface TreeNode {
   status: string;
   isExpanded?: boolean;
   children?: TreeNode[];
+  item: any;
 }
 
 const STATUS_RADIUS = 6
@@ -45,6 +46,7 @@ export type LinkTypesProps = {
   margin?: { top: number; right: number; bottom: number; left: number };
   data: TreeNode;
   linkType: string;
+  onNodeClick: (node: any) => void
 };
 
 export default function ItemTree({
@@ -52,7 +54,8 @@ export default function ItemTree({
   height: totalHeight,
   margin = defaultMargin,
   data: data,
-  linkType: linkType
+  linkType: linkType,
+  onNodeClick: onNodeClick
 }: LinkTypesProps) {
   const [layout, setLayout] = useState<string>('cartesian');
   const [orientation, setOrientation] = useState<string>('horizontal');
@@ -74,13 +77,15 @@ export default function ItemTree({
     forceUpdate()
   }, [linkType])
 
+  // fill="#272b4d" 
+
   const LinkComponent = getLinkComponent({ layout, linkType, orientation });
 
   return totalWidth < 10 ? null : (
     <div className="myItemTree">
       <svg width={totalWidth} height={totalHeight}>
         <LinearGradient id="links-gradient" from="#fd9b93" to="#fe6e9e" />
-        <rect width={totalWidth} height={totalHeight} rx={14} fill="#272b4d" />
+        <rect width={totalWidth} height={totalHeight} rx={14} fill="#393B53"/>
         <Group top={margin.top} left={margin.left}>
           <Tree
             root={hierarchy(data, d => (d.isExpanded ? null : d.children))}
@@ -138,7 +143,9 @@ export default function ItemTree({
                           onClick={() => {
                             node.data.isExpanded = !node.data.isExpanded;
                             console.log(node);
-                            alert(`clicked: ${JSON.stringify(node.data.name)}`);
+                            //alert(`clicked: ${JSON.stringify(node.data.name)}`);
+                            
+                            onNodeClick(node)
                             forceUpdate();
                           }}
                         />
