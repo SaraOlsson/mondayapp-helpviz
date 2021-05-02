@@ -307,7 +307,7 @@ const App = () => {
               }
               </div>
               
-              <ItemTree width={500} height={200} 
+              <ItemTree width={700} height={200} 
               data={generateTreeNode(perUserTree[key], key)}
               linkType={linkType}
               onNodeClick={onNodeClick}/>

@@ -38,7 +38,7 @@ const STATUS_RADIUS = 6
 //   ],
 // };
 
-const defaultMargin = { top: 30, left: 30, right: 230, bottom: 70 };
+const defaultMargin = { top: 30, left: 30, right: 350, bottom: 70 };
 
 export type LinkTypesProps = {
   width: number;
@@ -80,6 +80,18 @@ export default function ItemTree({
   }, [linkType])
 
   // fill="#272b4d" 
+
+  const getIsHelpingText = (item: any, attr: string) => {
+
+    let isHelping = item.column_values.find((c: any) => c.title === attr).text 
+    var isHelpingList = isHelping.split(",");
+    let count = isHelpingList.length;
+
+    if(isHelping === "")
+      return ""
+
+    return count > 1 ? count + " persons are helping" : isHelping + " is helping"
+  }
 
   const LinkComponent = getLinkComponent({ layout, linkType, orientation });
 
@@ -178,6 +190,19 @@ export default function ItemTree({
                           onMouseEnter={() => setIsShown(true)}
                           onMouseLeave={() => setIsShown(false)}
                         />
+                      }
+                      { node.data.item && 
+                        <text
+                          dy=".33em"
+                          fontSize={9}
+                          fontFamily="Arial"
+                          transform={"translate("+ ((STATUS_RADIUS*2)+(width/2)+2*STATUS_RADIUS).toString() + ", 0)"}
+                          textAnchor="left"
+                          style={{ pointerEvents: 'none' }}
+                          fill={node.depth === 0 ? '#71248e' : node.children ? 'white' : '#26deb0'}
+                        >
+                          {getIsHelpingText(node.data.item, "Helping")}
+                        </text>
                       }
                     </Group>
                   );
