@@ -22,8 +22,25 @@ body {
   max-width: 1000px;
 }
 
+/* .isMineHeader {
+  background-color: #339DFF;
+  border-radius: 16px;
+  padding: 1px;
+  color: white;
+  width: 100px;
+  height: 50px;
+} */
+
 .userHeader {
   color: #0085FF;
+}
+
+.summaryText {
+  color: #676879;
+}
+
+.warningText {
+  color: #E44258; /* negative */
 }
 
 .editContainer {
@@ -32,3 +49,53 @@ body {
   border-radius: 8px;
   padding: 16px;
 }
+
+  .editContainer .textWorkingOn {
+    font-size: 8px;
+  }
+
+  .editContainer .textItemName {
+    font-size: 16px;
+  }
+
+  .blockquote {
+    background: #1C1F3B; /*#f9f9f9; #0085ff*/
+    border-left: 10px solid #ccc;
+    margin: 1.5em 10px;
+    padding: 0.5em 10px;
+    quotes: "\201C""\201D""\2018""\2019";
+
+    display: flex;
+    flex-direction: column;
+  }
+  /* .blockquote:before {
+    color: #ccc;
+    content: open-quote;
+    font-size: 4em;
+    line-height: 0.1em;
+    margin-right: 0.25em;
+    vertical-align: -0.4em;
+  } */
+  .blockquote p {
+    display: inline;
+  }
+
+  .input-component__input {
+    background-color: white !important;
+  }
+
+  .iconCirle {
+    background-color: #393B53;
+    border-radius: 100px;
+    padding: 6px;
+    width: 30px;
+    height: 30px;
+    display: inline-flex;
+    vertical-align: middle;
+    margin-right: 10px;
+
+  }
+
+  .alertRow {
+   height: 50px;
+  } 

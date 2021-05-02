@@ -63,6 +63,8 @@ export default function ItemTree({
   const [stepPercent, setStepPercent] = useState<number>(0.5);
   const forceUpdate = useForceUpdate();
 
+  const [isShown, setIsShown] = useState<boolean>(false);
+
   const innerWidth = totalWidth - margin.left - margin.right;
   const innerHeight = totalHeight - margin.top - margin.bottom;
 
@@ -130,6 +132,7 @@ export default function ItemTree({
                       )}
                       {node.depth !== 0 && (
                         <rect
+                          style={{cursor: "pointer"}}
                           height={height}
                           width={width}
                           y={-height / 2}
@@ -158,19 +161,22 @@ export default function ItemTree({
                         style={{ pointerEvents: 'none' }}
                         fill={node.depth === 0 ? '#71248e' : node.children ? 'white' : '#26deb0'}
                       >
-                        {node.data.name}
+                        {node.depth > 0 && node.data.name}
                       </text>
                       {/* <div style={{width: 10, height: 10, borderRadius: 100, backgroundColor: 'pink'}}></div> */}
                       {node.depth > 0 &&
                       <circle
-                          r={STATUS_RADIUS}
+                          r={isShown ? 2*STATUS_RADIUS: STATUS_RADIUS}
                           transform={"translate("+ ((STATUS_RADIUS*2)+(width/2)).toString() + ", 0)"}
-                          fill={node.data.status === 'Flow' ? colors["success"] : colors["orange"]}
+                          fill={node.data.status === 'Flow' ? colors["success"] : node.data.status === 'Stuck' ? colors["error"] : colors["orange"]}
                           onClick={() => {
                             node.data.isExpanded = !node.data.isExpanded;
                             console.log(node);
                             forceUpdate();
                           }}
+                          style={{cursor: "pointer"}}
+                          onMouseEnter={() => setIsShown(true)}
+                          onMouseLeave={() => setIsShown(false)}
                         />
                       }
                     </Group>
