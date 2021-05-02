@@ -6,6 +6,7 @@ import { pointRadial } from 'd3-shape';
 import useForceUpdate from './useForceUpdate';
 import LinkControls from './LinkControls';
 import getLinkComponent from './getLinkComponent';
+import Emoji from './Emoji'
 
 import colors from "monday-ui-react-core/dist/assets/colors.json"
 
@@ -90,7 +91,7 @@ export default function ItemTree({
     if(isHelping === "")
       return ""
 
-    return count > 1 ? count + " persons are helping" : isHelping + " is helping"
+    return count > 1 ? count + " colleagues are helping" : isHelping + " is helping"
   }
 
   const LinkComponent = getLinkComponent({ layout, linkType, orientation });

@@ -9,6 +9,7 @@ import TextField from "monday-ui-react-core/dist/TextField.js"
 import Button from "monday-ui-react-core/dist/Button.js"
 import TaskItem from './components/TaskItem'
 import SearchTest from './components/SearchTest'
+import Emoji from './components/Emoji'
 import MondayProgressBar from './components/MondayProgressBar'
 //import Example from './components/Example'
 import ItemTree from './components/ItemTree'
@@ -33,6 +34,7 @@ const App = () => {
   const [context, setContext] = useState(undefined)
   const [settings, setSettings] = useState({})
   const [boardData, setBoardData] = useState({})
+  const [boardId, setBoardId] = useState(undefined)
   const [itemData, setItemData] = useState(undefined)
   const [boardIds, setBoardIds] = useState([])
   const [perUserTree, setPerUserTree] = useState({})
@@ -46,66 +48,20 @@ const App = () => {
 
   useEffect(() => {
 
-    monday.api(`query { me { name id } }`).then(res => {
-      console.log(res);
-      /* { data: { users: [{id: 12312, name: "Bart Simpson"}, {id: 423423, name: "Homer Simpson"}] } } */
-    });
+    // monday.get("itemIds").then(res => queryData());
+    // queryHelpingEfforts()
 
     // WORKS in Monday view
     monday.listen(['context'], res => {
       setContext(res.data);
 
       monday.api(`query ($boardIds: [Int]) { boards (ids:$boardIds) { name id items(limit:10) { name column_values { title text value} } } }`,
-        { variables: {boardIds: context.boardIds} }
+        { variables: {boardIds: res.data.boardIds} }
       )
-      .then(res => {
-        const data = res.data
-        setBoardData(res)
-        // const items = res.data.boards.find(b => b.name === "Saras Test Workspace").items
-        const items = res.data.boards.find(b => b.name === "Flow Board").items
-        setItemData(items) 
-
-        // Group by users instead
-        let grouped = [];
-        let created = Object.create(null)
-
-        items.forEach(function (a) {
-            let person = a.column_values.find(c => c.title === "Person").text
-            this[person] || grouped.push(this[person] = []);
-            this[person].push(a);
-        }, created);
-
-        console.log(grouped);
-        console.log(created);
-        setPerUserTree(created)
-
-      });
+      .then(res => { handleItemData(res) });
     })
 
-    // WORKS in local dev
-    monday.api(`query ($boardIds: [Int]) { boards (ids:$boardIds) { name id items(limit:10) { name id column_values { title text value} } } }`,
-        { variables: {boardIds: [1246771577]} } //  // 1212645165
-      )
-      .then(res => {
-        const data = res.data
-        setBoardData(data)
-
-        const items = res.data.boards.find(b => b.name === "Flow Board").items
-        setItemData(items) 
-        console.log(items)
-
-        let grouped = []; // not used
-        let created = Object.create(null)
-
-        items.forEach(function (a) {
-            let person = a.column_values.find(c => c.title === "Person").text
-            this[person] || grouped.push(this[person] = []);
-            this[person].push(a);
-        }, created);
-
-        setPerUserTree(created)
-
-    });
+    // queryData() // LOCAL DEV
 
     const callback = res => {
       setSettings(res);
@@ -116,6 +72,57 @@ const App = () => {
     monday.listen(['settings'], callback);
 
   }, [])
+
+  const handleItemData = (res) => {
+
+    const data = res.data
+    setBoardData(res)
+    // const items = res.data.boards.find(b => b.name === "Saras Test Workspace").items
+    const chosenBoard = data.boards.find(b => b.name === "Flow Board")
+    const items = chosenBoard.items
+    setItemData(items) 
+    setBoardId(chosenBoard.id)
+
+    // Group by users instead
+    let grouped = [];
+    let created = Object.create(null)
+
+    items.forEach(function (a) {
+        let person = a.column_values.find(c => c.title === "Person").text
+        this[person] || grouped.push(this[person] = []);
+        // let helpinInfo = queryHelpingEfforts(person)
+        //a["helping"] = helpinInfo ? helpinInfo.length : 0
+        this[person].push(a);
+    }, created);
+
+    console.log(grouped);
+    console.log(created);
+    setPerUserTree(created)
+
+  }
+
+  const queryData = () => {
+
+    // WORKS in local dev
+    monday.api(`query ($boardIds: [Int]) { boards (ids:$boardIds) { name id items(limit:10) { name id column_values { title text value} } } }`,
+    { variables: {boardIds: [1246771577]} } //  // 1212645165
+    )
+    .then(res => { handleItemData(res)});
+  }
+
+  const queryHelpingEfforts = (username) => {
+
+    // WORKS in local dev
+    monday.api(`query ($boardIds: [Int]) { boards (ids:$boardIds) { name id items(limit:50) { name id column_values(ids:["person", "people"]) { id text} } } }`,
+    { variables: {boardIds: [1246771577]} } //  // 1212645165
+    )
+    .then(res => { 
+      let items = res.data.boards[0].items
+      let inTasks = items.filter(i => i.column_values[1].text.includes(username))
+      console.log(inTasks)
+      return inTasks
+    });
+  }
 
   
   const generateTreeNode = (items, key = 'User') => {
@@ -181,7 +188,7 @@ const App = () => {
     monday.api(`
       mutation {
         change_simple_column_value (
-          board_id: 1246771577, 
+          board_id: ${boardId}, 
           item_id: ${activeEdit.item.id}, 
           column_id: "status", 
           value: "Flow"
@@ -220,8 +227,6 @@ const App = () => {
     <div className="App">
 
       <div className="mainFlex">
-
-        
 
         { (openItemDialog && activeEdit) &&
           <div className="editContainer" >
@@ -288,6 +293,9 @@ const App = () => {
             // let myId = "unknown2"
             let isMine = itemsAreMine(perUserTree[key])
             let ifIsme = isMine ? "(Me)" : ""
+
+            // let helpingInfo = await queryHelpingEfforts(key)
+            // let numHelping = helpingInfo ? helpingInfo.length : "X"
             
             if(!key) // only return items with Person assigned
               return null
@@ -295,16 +303,17 @@ const App = () => {
             return (
             <div key={idx}>
               <div className="blockquote">
-              <h3 className="userHeader">{key} {ifIsme} </h3>
-              <p className="summaryText"> 
-                <b>Summary:</b> {numOngoing} ongoing {numOngoing > 1 ? "items" : "item"}
-              </p>
-              { (numOngoing >= warningAtCount) &&
-                <div className="alertRow">
-                  <span className="iconCirle"><img src={Alert} alt="icon" width={30}/></span>
-                  <span className="warningText">High workload</span>
-                </div>
-              }
+                <h3 className="userHeader">{key} <span style={{color: colors["indigo"]}}> {ifIsme} </span></h3>
+                <p className="summaryText"> 
+                  <b>Summary:</b> {numOngoing} ongoing {numOngoing > 1 ? "items" : "item"}
+                </p>
+                { (numOngoing >= warningAtCount) &&
+                  <div className="alertRow">
+                    <span className="iconCirle"><img src={Alert} alt="icon" width={30}/></span>
+                    <span className="warningText">Many parallel tasks</span>
+                  </div>
+                }
+                <p>Is helping {"X"} colleagues, </p>
               </div>
               
               <ItemTree width={700} height={200} 
@@ -316,50 +325,12 @@ const App = () => {
           })
         }
 
+        {/* {JSON.stringify(context)}
+        {JSON.stringify(boardData, null, 2)} */}
+
       </div>
     </div>
   )
 }
 
 export default App;
-
-// JSON.stringify(colors)
-// const StoryDialogContent = () => {
-//   return (
-//     <section className="story-dialog-content">
-//       <h1>I am a dialog content</h1>
-//     </section>
-//   );
-// };
-
-/* <Dialog
-  animationType="expand"
-  position={"bottom"}
-  shouldShowOnMount={true}
-  content={<StoryDialogContent />}/> */
-
-  /* <AttentionBox
-  title="Hello Monday Apps!"
-  text="Let's start building your amazing app, which will change the world!"
-  type="success"
-/> */
-
-
-/* <MondayProgressBar/>
-<SearchTest/> */
-
-/* { itemData && 
-  <TaskItem itemData={itemData} name="MyName" columnValues={{status: "Great"}}/>
-} */
-
-/* {
-  JSON.stringify(settings)
-} */
-/* {
-  colors["american_gray"]
-} */
-/* <p>Board data</p> <br/><br/>
-{JSON.stringify(boardData, null, 2)}
-<p>Context</p> <br/><br/> */
-/* {JSON.stringify(itemData, null, 2)} */
-/* {JSON.stringify(context)} */
